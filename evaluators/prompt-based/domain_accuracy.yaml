@@ -1,0 +1,42 @@
+name: domain_accuracy
+description: >
+  Evaluates whether the agent response is factually accurate within
+  the Contoso policy domain by comparing against provided context.
+version: "1.0"
+type: prompt_based
+model: gpt-4o
+rubric:
+  scale: 1-5
+  criteria:
+    5: "All facts match the source context. Numbers, dates, and processes are exact."
+    4: "Mostly accurate with minor imprecision (e.g., rounding, paraphrasing)."
+    3: "Core answer correct but some details wrong or missing."
+    2: "Significant factual errors that could mislead the user."
+    1: "Completely inaccurate or fabricated information."
+
+prompt_template: |
+  You are evaluating factual accuracy of an AI assistant response
+  against the authoritative source context.
+
+  User Query: {query}
+  Source Context: {context}
+  Assistant Response: {response}
+
+  Check every factual claim in the response against the source context.
+  Score 1-5:
+  5: All facts exactly match source
+  4: Mostly accurate, minor imprecision
+  3: Core answer correct, some details wrong
+  2: Significant factual errors
+  1: Completely inaccurate
+
+  Output JSON: {{"score": <1-5>, "reasoning": "<explanation>", "errors": ["<list any factual errors>"]}}
+
+data_mapping:
+  query: "{{item.query}}"
+  context: "{{item.context}}"
+  response: "{{sample.output_text}}"
+
+threshold:
+  blocking: true
+  min_score: 4.0

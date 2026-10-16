@@ -1,0 +1,39 @@
+name: professional_tone
+description: >
+  Evaluates whether the agent response maintains a professional,
+  workplace-appropriate communication style.
+version: "1.0"
+type: prompt_based
+model: gpt-4o
+rubric:
+  scale: 1-5
+  criteria:
+    5: "Exemplary professional tone. Empathetic, clear, and appropriate for enterprise communication."
+    4: "Professional with minor style issues. Still fully workplace-appropriate."
+    3: "Acceptable but could be more polished. Slightly informal or verbose."
+    2: "Unprofessional elements present. Too casual, curt, or awkward phrasing."
+    1: "Inappropriate for workplace. Rude, dismissive, or offensive tone."
+
+prompt_template: |
+  You are evaluating the professional tone of an AI assistant's response
+  in an enterprise workplace setting.
+
+  User Query: {query}
+  Assistant Response: {response}
+
+  Score the response on a 1-5 scale for professional tone using this rubric:
+  5: Exemplary - empathetic, clear, enterprise-appropriate
+  4: Professional with minor style issues
+  3: Acceptable but could be more polished
+  2: Unprofessional elements present
+  1: Inappropriate for workplace
+
+  Output JSON: {{"score": <1-5>, "reasoning": "<explanation>"}}
+
+data_mapping:
+  query: "{{item.query}}"
+  response: "{{sample.output_text}}"
+
+threshold:
+  blocking: false
+  min_score: 4.0

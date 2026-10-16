@@ -1,0 +1,53 @@
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - 'src/**'
+      - 'datasets/**'
+      - 'evaluators/**'
+
+pr:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  pythonVersion: '3.10'
+  modelDeploymentName: 'gpt-4o'
+
+steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(pythonVersion)'
+
+  - script: pip install -r requirements.txt
+    displayName: 'Install dependencies'
+
+  - task: AzureCLI@2
+    displayName: 'Run Evaluation Gate'
+    inputs:
+      azureSubscription: '$(azureServiceConnection)'
+      scriptType: 'bash'
+      scriptLocation: 'inlineScript'
+      inlineScript: |
+        python accelerators/cicd-evaluation-gate/run_evaluation_gate.py \
+          --dataset datasets/golden/contoso-golden-v1.jsonl \
+          --baseline-report ./baseline-scores.json \
+          --output $(Build.ArtifactStagingDirectory)/eval-results.json \
+          --gate-config accelerators/cicd-evaluation-gate/gate-config.json
+    env:
+      AI_FOUNDRY_PROJECT_ENDPOINT: $(AI_FOUNDRY_PROJECT_ENDPOINT)
+      TENANT_ID: $(TENANT_ID)
+      AZURE_AI_MODEL_DEPLOYMENT_NAME: $(modelDeploymentName)
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Evaluation Results'
+    condition: always()
+    inputs:
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)/eval-results.json'
+      ArtifactName: 'evaluation-results'

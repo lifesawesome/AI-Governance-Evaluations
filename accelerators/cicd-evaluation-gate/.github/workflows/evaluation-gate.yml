@@ -1,0 +1,77 @@
+name: AI Evaluation Gate
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'datasets/**'
+      - 'evaluators/**'
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+env:
+  PYTHON_VERSION: '3.10'
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Run Evaluation Gate
+        env:
+          AI_FOUNDRY_PROJECT_ENDPOINT: ${{ secrets.AI_FOUNDRY_PROJECT_ENDPOINT }}
+          TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_AI_MODEL_DEPLOYMENT_NAME: ${{ vars.MODEL_DEPLOYMENT_NAME || 'gpt-4o' }}
+        run: |
+          python accelerators/cicd-evaluation-gate/run_evaluation_gate.py \
+            --dataset datasets/golden/contoso-golden-v1.jsonl \
+            --baseline-report ./baseline-scores.json \
+            --output ./eval-results.json \
+            --gate-config accelerators/cicd-evaluation-gate/gate-config.json
+
+      - name: Upload Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: evaluation-results
+          path: ./eval-results.json
+
+      - name: Comment PR with Results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const results = JSON.parse(fs.readFileSync('./eval-results.json', 'utf8'));
+            const status = results.gate_passed ? '✅ PASSED' : '❌ FAILED';
+            const body = `## AI Evaluation Gate ${status}\n\n` +
+              `| Evaluator | Score | Threshold | Status |\n` +
+              `|-----------|-------|-----------|--------|\n` +
+              (results.scores || []).map(s =>
+                `| ${s.evaluator} | ${s.score} | ${s.threshold} | ${s.passed ? '✅' : '❌'} |`
+              ).join('\n');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body
+            });

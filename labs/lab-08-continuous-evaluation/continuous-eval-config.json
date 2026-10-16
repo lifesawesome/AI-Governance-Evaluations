@@ -1,0 +1,43 @@
+{
+  "schedule": {
+    "frequency": "hourly",
+    "sample_size": 20,
+    "lookback_window": "1h",
+    "full_eval_frequency": "daily",
+    "full_eval_dataset": "datasets/golden/contoso-golden-v1.jsonl"
+  },
+  "drift_detection": {
+    "threshold": 0.1,
+    "window_comparison": "7d_rolling_average",
+    "alerting": {
+      "channel": "teams_webhook",
+      "severity_levels": {
+        "warning": 0.05,
+        "critical": 0.15
+      }
+    }
+  },
+  "trace_to_dataset": {
+    "min_quality_score": 4.5,
+    "require_human_review": true,
+    "max_additions_per_day": 10,
+    "diversity_check": true
+  },
+  "evaluators": [
+    {
+      "name": "task_adherence",
+      "blocking": true,
+      "threshold": 4.0
+    },
+    {
+      "name": "safety",
+      "blocking": true,
+      "threshold": 5.0
+    },
+    {
+      "name": "professional_tone",
+      "blocking": false,
+      "threshold": 4.0
+    }
+  ]
+}
