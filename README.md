@@ -1,145 +1,157 @@
-# Microsoft Foundry Evaluation Engineering Accelerator
+# Microsoft Foundry Evaluation Engineering Workshop
 
-A comprehensive, deployable accelerator for evaluating AI agents using Azure AI Foundry. This repository provides **hands-on labs**, **CI/CD pipelines**, **LLM-as-judge evaluators**, and **production monitoring** — all deployable to customer Azure infrastructure.
+Start here for a **labs-first learning path** using the existing Contoso support
+agent and Microsoft Foundry project. There are **nine core lab notebooks**, one
+optional **Lab 4B native-rubric notebook**, and a portal-only model evaluation
+exercise. Standalone examples and unused evaluator templates have been removed;
+the lab notebooks are the source of the exercises.
 
-## 🎯 What's Included
-
-| Component | Description |
-|-----------|-------------|
-| **9 Lab Notebooks** | Step-by-step Jupyter notebooks CSAs walk through with customers |
-| **CI/CD Accelerator** | GitHub Actions + Azure DevOps pipelines with evaluation gates |
-| **LLM-as-Judge Accelerator** | Custom prompt-based evaluators with rubrics |
-| **Continuous Evaluation** | Production monitoring with trace-based scoring |
-| **Infrastructure as Code** | Bicep templates for full environment deployment |
-| **Golden Datasets** | Versioned evaluation datasets with coverage validation |
-| **Reference Agent** | Contoso Support Agent exercising RAG + tools + multi-turn |
+These are instructional labs, not a production deployment package. Lab 4 runs
+real cloud evaluations; other labs include simulations or adaptation templates
+as indicated in their instructions.
 
 ## 📋 Prerequisites
 
 - Azure subscription with AI Foundry access
 - Azure CLI authenticated (`az login`)
 - Python 3.10+
-- `azure-ai-projects>=2.0.0`
-- GPT-4o model deployment (for LLM-as-judge evaluators)
-- Application Insights resource (for production monitoring)
+- `azure-ai-projects>=2.8.0` (installed from the requirements below)
+- A judge model deployment such as `gpt-4.1`
+- An existing Foundry project and Contoso agent for the live agent exercises
+- Application Insights and a Log Analytics workspace for Lab 8's live trace option
 
 ## 🚀 Quick Start
 
-```bash
-# 1. Clone and setup
-cd Evaluations_Accelerator
-pip install -r requirements.txt
+Run these commands from the folder containing this README and
+[requirements.txt](requirements.txt). Use a virtual environment; do not overwrite
+an existing local configuration.
 
-# 2. Configure environment
-cp .env.template .env
-# Edit .env with your Azure AI Foundry endpoint
-
-# 3. Deploy infrastructure (optional - for full deployment)
-az deployment group create --template-file infrastructure/bicep/main.bicep --parameters infrastructure/bicep/parameters.json
-
-# 4. Start with Lab 01
-jupyter notebook labs/lab-01-charter/lab-01-evaluation-charter.ipynb
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+if (!(Test-Path .env)) { Copy-Item .env.template .env }
+# Edit .env with your existing project, model, and agent settings.
+jupyter notebook .\labs\lab-01-charter\lab-01-evaluation-charter.ipynb
 ```
+
+Alternatively, open a notebook in VS Code and select the virtual environment's
+kernel. Run cells from top to bottom. Keep the folder structure intact and use
+each notebook's own directory as its working directory; some earlier labs write
+outputs using notebook-relative paths. Cloud exercises incur usage charges.
 
 ### Using existing Azure resources
 
-The notebooks and standalone accelerator scripts load the `.env` beside
+The notebooks and Lab 7 support runner load the `.env` beside
 `.env.template`. Existing process environment variables take precedence, so CI/CD
 secrets and model settings continue to work without a local file. The local
 `.env` is ignored by Git.
 
-Configure your own existing resources using these variable names:
+For the supplied environment, use:
 
 | Variable | Value |
 |----------|-------|
-| `AI_FOUNDRY_PROJECT_ENDPOINT` | `https://<your-account>.services.ai.azure.com/api/projects/<your-project>` |
-| `TENANT_ID` | `<your-tenant-id>` |
+| `AI_FOUNDRY_PROJECT_ENDPOINT` | `https://demopocaifoundry.services.ai.azure.com/api/projects/demoproject` |
+| `TENANT_ID` | `16b3c013-d300-468d-ac64-7eda0820b6d3` |
 | `AZURE_AI_MODEL_DEPLOYMENT_NAME` | `gpt-4.1` |
-| `AZURE_AI_SEARCH_ENDPOINT` | `https://<your-search>.search.windows.net` |
-| `AZURE_AI_SEARCH_INDEX` | `<your-index-name>` |
+| `AZURE_AI_SEARCH_ENDPOINT` | `https://demofoundryaisearch.search.windows.net` |
+| `AZURE_AI_SEARCH_INDEX` | `underwriting-index` |
 
-Use the project endpoint shown in your Foundry project.
-This accelerator reads `AI_FOUNDRY_PROJECT_ENDPOINT`, not
+The endpoint uses `demoproject`, matching the supplied project resource ID.
+This workshop reads `AI_FOUNDRY_PROJECT_ENDPOINT`, not
 `AZURE_AI_PROJECT_ENDPOINT`. Its search index variable is
 `AZURE_AI_SEARCH_INDEX`, not `AZURE_SEARCH_INDEX_NAME`; the search settings are
 reserved in the template and are not currently consumed by the Python scripts
-or notebooks. Unused workshop settings (Bing, MCP, embeddings, OpenAI direct
+or notebooks. Unused settings (Bing, MCP, embeddings, OpenAI direct
 access, and sensitive-content tracing) are not needed here.
 
 Authenticate before running the notebooks or scripts:
 
 ```powershell
-az login --tenant "<your-tenant-id>"
-az account set --subscription "<your-subscription-id>"
+az login --tenant 16b3c013-d300-468d-ac64-7eda0820b6d3
+az account set --subscription 93c5449c-bbb2-4249-9461-ddf749e03430
 ```
 
 No API key or infrastructure deployment is required to use the existing project.
+Lab 4 reuses the existing `contoso-support-agent-eval` agent by default, without
+creating a new version. Set `AI_FOUNDRY_AGENT_NAME` and optionally
+`AI_FOUNDRY_AGENT_VERSION` to select another existing agent/version. It registers
+or reuses matching code-based and prompt-based custom evaluators, then runs them
+alongside six built-in evaluators against real agent responses. Follow the
+printed Foundry report URL to inspect results under **Automatic Evaluation** or
+the project-level **Evaluations** page, not **Human Evaluation**.
+Optional `LAB04_CODE_EVALUATOR_NAME`, `LAB04_TONE_EVALUATOR_NAME`, and their
+`_VERSION` settings select existing compatible catalog entries; incompatible
+definitions are never overwritten. These custom evaluator APIs are in preview.
+The lab saves actual scores, pinned evaluator versions, and run IDs in its
+baseline report, plus full per-item results with judge explanations. Compare
+only reports with `valid_for_comparison: true` using matching datasets,
+evaluator definitions, thresholds, and scales. All cases are retained, including
+content-filter blocks and evaluator errors/skips; these make the report invalid
+for CI/CD comparison. Missing scores are never counted as passes, and averages
+include explicit usable/total/error counts;
+Lab 7's simulated gate examples are not comparable cloud candidate results.
+
 For live production monitoring in Lab 8, also supply
 `APPLICATIONINSIGHTS_CONNECTION_STRING` and `APP_INSIGHTS_WORKSPACE_ID` in `.env`.
 The latter is the Log Analytics workspace ID, not the Application Insights
 application ID or instrumentation key.
 
-## 📁 Repository Structure
+## Learning order
 
+| Lab | Open | What you learn |
+| --- | --- | --- |
+| 1 | [Evaluation charter](labs/lab-01-charter/lab-01-evaluation-charter.ipynb) | Define risks, quality, and ownership |
+| 2 | [Golden dataset](labs/lab-02-golden-dataset/lab-02-golden-dataset.ipynb) | Build and validate test coverage |
+| 3 | [Evaluator selection](labs/lab-03-evaluator-matrix/lab-03-evaluator-matrix.ipynb) | Map failures to metrics |
+| 4 | [Agent evaluation](labs/lab-04-portal-sdk-custom/lab-04-portal-sdk-custom.ipynb) | Score real agent responses with built-in and custom evaluators; open the Foundry report |
+| 4B, optional | [LLM-as-judge rubric](labs/lab-04-portal-sdk-custom/lab-04b-llm-as-judge-rubric.ipynb) | Edit a weighted native rubric, review it, and opt in to cloud scoring of calibration answers |
+| 4, optional | [Portal model exercise](labs/lab-04-portal-sdk-custom/README.md) | Evaluate the underlying model without modifying the agent |
+| 5 | [RAG evaluation](labs/lab-05-rag-evaluation/lab-05-rag-evaluation.ipynb) | Compare answering and retrieval configurations |
+| 6 | [Agent evaluation](labs/lab-06-agent-evaluation/lab-06-agent-evaluation.ipynb) | Inspect answers and tool-use trajectories |
+| 7 | [CI/CD gate](labs/lab-07-cicd/lab-07-cicd-evaluation-gate.ipynb) | Practice passing/failing gates with synthetic scores and inspect pipeline templates |
+| 8 | [Continuous evaluation](labs/lab-08-continuous-evaluation/lab-08-continuous-evaluation.ipynb) | Sample traces, judge responses, and plan monitoring |
+| 9 | [Operating model](labs/lab-09-operating-model/lab-09-operating-model.ipynb) | Build the governance runbook |
+
+For a shorter session, use Labs 1, 2, 4, 7, and 9. See the
+[facilitator guide](facilitator/facilitator-guide.md) for timing.
+
+### Lab 4: three distinct exercises
+
+Start with the [Lab 4 guide](labs/lab-04-portal-sdk-custom/README.md).
+The main notebook evaluates the existing agent. Lab 4B demonstrates native rubric
+evaluators using four hand-authored calibration responses, not new agent output;
+`RUN_CLOUD=False` and `RUBRIC_REVIEWED=False` make cloud registration/scoring
+explicit opt-ins. The portal exercise evaluates a model with policy context,
+not the agent's retrieval or tools. Keep their results separate.
+
+### Supporting files
+
+- [datasets/](datasets/): golden, adversarial, and expected-action datasets used
+  or produced by Lab 2.
+- [Lab 7 support](labs/lab-07-cicd/README.md): the required runner and preserved
+  gate configuration; pipeline YAML is generated by the notebook, not maintained
+  as duplicate standalone templates. Read its limitations before adapting a pipeline.
+- [Reference agent configuration](src/reference-agent/agent-config.yaml):
+  scenario reference, not a deployment command. Reuse the existing agent.
+- [Optional infrastructure](infrastructure/bicep/main.bicep): provisions supporting
+  Azure resources (Log Analytics, Application Insights, Search, and Key Vault).
+  It does **not** create the Foundry project, deploy a model, or deploy the agent.
+  Existing-resource learners can skip it.
+- [tests/](tests/): local regression tests for the evaluation notebooks.
+
+Saved Lab 4 run identifiers and actual results remain in its lab folder.
+Keep them for diagnosis and Lab 7 discussion, but do not use an incomplete or
+`valid_for_comparison: false` report as a release baseline.
+
+## Local validation
+
+```powershell
+python -m unittest discover -s tests -v
 ```
-Evaluations_Accelerator/
-├── labs/                          # 9 hands-on lab notebooks
-│   ├── lab-01-charter/            # Evaluation Strategy Charter
-│   ├── lab-02-golden-dataset/     # Dataset Engineering
-│   ├── lab-03-evaluator-matrix/   # Evaluator Selection
-│   ├── lab-04-portal-sdk-custom/  # Portal, SDK & Custom Evaluations
-│   ├── lab-05-rag-evaluation/     # RAG Evaluation & Optimization
-│   ├── lab-06-agent-evaluation/   # Agent & Tool-Use Evaluation
-│   ├── lab-07-cicd/               # Evaluation-Driven CI/CD
-│   ├── lab-08-continuous-eval/    # Production Monitoring
-│   └── lab-09-operating-model/    # Governance & Operating Model
-├── accelerators/                  # Deployable accelerator solutions
-│   ├── cicd-evaluation-gate/      # CI/CD pipeline with eval gates
-│   ├── llm-as-judge/             # Custom LLM judge evaluators
-│   └── continuous-evaluation/     # Production evaluation setup
-├── infrastructure/                # Bicep IaC for Azure deployment
-├── datasets/                      # Golden, adversarial, expected-actions
-├── evaluators/                    # Code-based & prompt-based evaluators
-├── src/                          # Reference agent implementation
-└── facilitator/                  # CSA delivery guides
-```
 
-## 🔄 Module Overview
-
-| Module | Lab | Duration | Key Output |
-|--------|-----|----------|------------|
-| 1. Evaluation Strategy | Charter creation | 30-45 min | Evaluation Charter |
-| 2. Dataset Engineering | Build golden dataset | 45-60 min | Golden Dataset v1 |
-| 3. Evaluator Selection | Map failures to evaluators | 30-45 min | Evaluator Matrix |
-| 4. Portal, SDK & Custom | Run evaluations both ways | 60-75 min | Baseline Report |
-| 5. RAG Evaluation | Parameter sweep & optimize | 60-75 min | RAG Optimization Report |
-| 6. Agent Evaluation | System + process eval | 75-90 min | Agent Scorecard |
-| 7. CI/CD Gates | Release gate pipeline | 60-75 min | Evaluation Gate |
-| 8. Production Monitoring | Continuous evaluation | 60-75 min | Monitoring Plan |
-| 9. Governance | Operating model | 45-60 min | Governance Runbook |
-
-## 🏗️ Accelerators (Deployable Solutions)
-
-### 1. CI/CD Evaluation Gate
-Deploy a complete evaluation gate into GitHub Actions or Azure DevOps:
-- Runs evaluators on every PR/release
-- Compares candidate vs baseline scores
-- Blocks deployment on safety or quality regression
-- Posts evaluation summary to PR
-
-### 2. LLM-as-Judge
-Deploy custom evaluators powered by GPT-4o:
-- Professional tone evaluator with rubric
-- Domain accuracy evaluator
-- Escalation appropriateness evaluator
-- Configurable thresholds and scoring
-
-### 3. Continuous Evaluation
-Deploy production monitoring with automated scoring:
-- Samples production traces from Application Insights
-- Scores responses on schedule
-- Alerts on drift/degradation
-- Feeds back into golden dataset
+These tests do not submit paid cloud evaluations. They do not certify production
+pipeline deployment or replace review of actual Foundry evaluation errors.
 
 ## 📄 License
 

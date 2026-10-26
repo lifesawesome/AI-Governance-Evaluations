@@ -1,0 +1,7 @@
+{
+  "project_endpoint": "https://demopocaifoundry.services.ai.azure.com/api/projects/demoproject",
+  "agent_name": "contoso-support-agent-eval",
+  "agent_version": "1",
+  "eval_id": "eval_2efdec36639049a9b56538c909532578",
+  "run_id": "evalrun_38542edd4e1d4dcba955e0e218b742e1"
+}

@@ -1,13 +1,13 @@
-# Facilitator Guide — Microsoft Foundry Evaluation Engineering Accelerator
+# Facilitator Guide — Microsoft Foundry Evaluation Engineering Workshop
 
 ## Overview
 
-This accelerator is designed for **1-day or 2-day workshops** where CSAs guide customers through building a complete AI evaluation program. Labs are self-contained Jupyter notebooks that participants run against their own Azure AI Foundry projects.
+This labs-first workshop is designed for **1-day or 2-day sessions** where CSAs guide customers through building an AI evaluation program. There are nine core labs plus optional Lab 4B and a portal-only model exercise. Labs include live cloud calls, synthetic examples, and adaptation templates; do not present the repository as a production deployment package.
 
 ## Prerequisites (Verify Before Workshop)
 
 ### Azure Resources
-- [ ] Azure AI Foundry project with GPT-4o deployed
+- [ ] Existing Azure AI Foundry project, Contoso agent, and judge model deployment (for example, `gpt-4.1`)
 - [ ] Participants have `az login` working with correct tenant
 - [ ] Application Insights connected (for Labs 08+)
 - [ ] Azure AI Search (for Lab 05 RAG scenarios)
@@ -15,8 +15,8 @@ This accelerator is designed for **1-day or 2-day workshops** where CSAs guide c
 ### Participant Machines
 - [ ] Python 3.10+
 - [ ] Jupyter / VS Code with Jupyter extension
-- [ ] `pip install -r requirements.txt` completed
-- [ ] `.env` file configured from `.env.template`
+- [ ] Dependencies installed from [requirements.txt](../requirements.txt), including `azure-ai-projects>=2.8.0`
+- [ ] Local environment configured from [.env.template](../.env.template)
 
 ### Quick Validation
 ```bash
@@ -81,8 +81,15 @@ python -c "from azure.ai.projects import AIProjectClient; print('SDK ready')"
 - "18-25 cases is enough to start; grow organically from production"
 
 ### Lab 04 — SDK Evaluation
+- Optional extension: use [Lab 4B: interactive LLM-as-judge rubric](../labs/lab-04-portal-sdk-custom/lab-04b-llm-as-judge-rubric.ipynb) to teach native weighted rubrics, dimension applicability, and judge explanations. Allow 30-45 minutes; cloud calls are opt-in and require `azure-ai-projects>=2.8.0`. Its responses are hand-authored calibration examples, not live agent outputs.
+- Optional portal-only extension: follow the [Lab 4 guide](../labs/lab-04-portal-sdk-custom/README.md) to evaluate a model with Developer/User prompts. Explain that model-only results do not exercise the agent's retrieval or tools.
 - "The SDK gives you repeatability; the portal gives you visibility"
 - "Custom evaluators let you encode domain-specific quality"
+- Reuse `contoso-support-agent-eval` (or the configured existing agent); the lab does not redeploy it.
+- Show the combined run through its printed Foundry report URL. Use **Automatic Evaluation**, not **Human Evaluation**, or the project-level **Evaluations** page.
+- Open the evaluator catalog to show the reusable Response Quality Checker and Professional Tone definitions. Matching definitions are reused; incompatible definitions fail without overwriting them.
+- Inspect an actual agent response, all eight criteria, and the tone judge's explanation. Code scores are normalized to 0-1; tone scores remain 1-5.
+- Export `baseline-report.json` and `evaluation-results.json` for Lab 7. Retain all cases, including content-filter blocks and evaluator errors/skips. Require `valid_for_comparison: true` before comparing scores; an invalid report is diagnostic only. Averages exclude generation/evaluator failures with explicit sample/total/error counts, never counting missing scores as passes. Failed quality checks remain valid results. Lab 7's synthetic example scores must not be compared to these cloud scores.
 
 ### Lab 06 — Agent Evaluation
 - "Agents need TWO evaluations: what they say AND what they do"
@@ -91,6 +98,7 @@ python -c "from azure.ai.projects import AIProjectClient; print('SDK ready')"
 ### Lab 07 — CI/CD Gate
 - "Quality gates turn evaluation from a manual step into an automated checkpoint"
 - "Both absolute thresholds and regression detection matter"
+- The notebook's pass/fail demonstrations use synthetic scores. The retained runner and generated pipeline YAML are adaptation templates, not a certified production release gate. Follow the [Lab 7 limitations](../labs/lab-07-cicd/README.md); do not claim the current invalid Lab 4 report is a usable baseline.
 
 ### Lab 09 — Governance
 - "Evaluation without governance is just an experiment"
@@ -98,7 +106,7 @@ python -c "from azure.ai.projects import AIProjectClient; print('SDK ready')"
 
 ## Post-Workshop Follow-Up
 
-1. Share the `accelerators/` folder as deployable solutions
-2. Point to `datasets/` as templates for their own domains
+1. Share the [workshop learning path](../README.md) and completed lab notebooks
+2. Point to the [datasets](../datasets/) as templates for their own domains
 3. Schedule 2-week check-in to review their evaluation charter progress
-4. Connect them to the CI/CD accelerator for immediate pipeline setup
+4. Review the [Lab 7 adaptation checklist](../labs/lab-07-cicd/README.md) before planning live CI/CD integration
