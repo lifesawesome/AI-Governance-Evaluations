@@ -1,22 +1,26 @@
-# Lab 4: agent, rubric, and model evaluation
+# Lab 4: basic agent and model evaluation
 
 ## Choose your exercise
 
 | Order | Exercise | Target and outcome |
 | --- | --- | --- |
-| 1 | [Main Lab 4 notebook](lab-04-portal-sdk-custom.ipynb) | Reuse the existing Contoso agent; run built-in, code-based, and prompt-based evaluators together; save actual run IDs and a Foundry report URL |
-| 2, optional | [Lab 4B: interactive LLM-as-judge rubric](lab-04b-llm-as-judge-rubric.ipynb) | Edit and review a native weighted rubric, then score four hand-authored calibration responses in Foundry |
-| 3, optional | Portal-only model exercise below | Test the underlying model with Developer/User prompts without editing the agent |
+| Before Lab 4 | [Lab 03B: reference-agent setup](../lab-03-evaluator-matrix/lab-03b-reference-agent-setup.ipynb) | Create/select the reference agent and pin its name/version |
+| 1 | [Main Lab 4 notebook](lab-04-portal-sdk-custom.ipynb) | Reuse the selected Contoso agent; run built-in, code-based, and prompt-based evaluators together; save actual run IDs and a Foundry report URL |
+| 2, optional | Portal-only model exercise below | Test the underlying model with Developer/User prompts without editing the agent |
+| After Lab 4 | [Lab 05: RAG evaluation](../lab-05-rag-evaluation/lab-05-rag-evaluation.ipynb) then [Lab 06: tool trajectories](../lab-06-agent-evaluation/lab-06-agent-evaluation.ipynb) | Explore retrieval and action failure modes before advanced judge calibration |
+| After Lab 6, optional | [Lab 06B: advanced LLM-as-judge rubric](../lab-06-agent-evaluation/lab-06b-llm-as-judge-rubric.ipynb) | Edit and review a native weighted rubric, then score four hand-authored calibration responses in Foundry |
 
 Use `azure-ai-projects>=2.8.0` from the workshop requirements. Run notebooks
-top-to-bottom. Lab 4B defaults to `RUN_CLOUD=False`; enable cloud execution and
+top-to-bottom. Lab 06B defaults to `RUN_CLOUD=False`; enable cloud execution and
 approve the reviewed rubric only when ready to incur model usage charges.
 It uses the same project and can reuse the existing agent as the source for
 optional rubric generation, but its scored answers are calibration examples.
 It does not replace the main notebook's real-agent evaluation.
 
 Keep all generated evidence. The main notebook writes its baseline report,
-per-item results, and run reference here; Lab 4B writes under `rubric-results/`.
+per-item results, and run reference here; Lab 06B writes under
+`../lab-06-agent-evaluation/rubric-results/`. Any older Lab 4B results remain in
+this folder's `rubric-results/`; they are not moved or overwritten automatically.
 Do not mix rubric calibration scores or model-only scores into a release
 comparison against the agent baseline.
 

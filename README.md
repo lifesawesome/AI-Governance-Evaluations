@@ -2,7 +2,7 @@
 
 Start here for a **labs-first learning path** using the existing Contoso support
 agent and Microsoft Foundry project. There are **nine core lab notebooks**, one
-optional **Lab 4B native-rubric notebook**, and a portal-only model evaluation
+**Lab 03B reference-agent setup**, optional **Lab 06B native-rubric notebook**, and a portal-only model evaluation
 exercise. Standalone examples and unused evaluator templates have been removed;
 the lab notebooks are the source of the exercises.
 
@@ -17,7 +17,8 @@ as indicated in their instructions.
 - Python 3.10+
 - `azure-ai-projects>=2.8.0` (installed from the requirements below)
 - A judge model deployment such as `gpt-4.1`
-- An existing Foundry project and Contoso agent for the live agent exercises
+- An existing Foundry project and model deployment; Lab 03B selects an existing
+  Contoso agent or explicitly creates a minimal reference agent
 - Application Insights and a Log Analytics workspace for Lab 8's live trace option
 
 ## 🚀 Quick Start
@@ -73,6 +74,12 @@ az account set --subscription 93c5449c-bbb2-4249-9461-ddf749e03430
 ```
 
 No API key or infrastructure deployment is required to use the existing project.
+Before Lab 4, complete [Lab 03B reference-agent setup](labs/lab-03-evaluator-matrix/lab-03b-reference-agent-setup.ipynb).
+It reuses an existing agent without modifying it; `CREATE_IF_MISSING=True`
+explicitly permits creating a missing minimal prompt agent. Save the resolved
+name and version in `.env` using its opt-in save cell (or copy the printed
+settings). Restart already-running evaluation kernels after changing settings;
+process environment variables still take precedence.
 Lab 4 reuses the existing `contoso-support-agent-eval` agent by default, without
 creating a new version. Set `AI_FOUNDRY_AGENT_NAME` and optionally
 `AI_FOUNDRY_AGENT_VERSION` to select another existing agent/version. It registers
@@ -104,26 +111,33 @@ application ID or instrumentation key.
 | 1 | [Evaluation charter](labs/lab-01-charter/lab-01-evaluation-charter.ipynb) | Define risks, quality, and ownership |
 | 2 | [Golden dataset](labs/lab-02-golden-dataset/lab-02-golden-dataset.ipynb) | Build and validate test coverage |
 | 3 | [Evaluator selection](labs/lab-03-evaluator-matrix/lab-03-evaluator-matrix.ipynb) | Map failures to metrics |
-| 4 | [Agent evaluation](labs/lab-04-portal-sdk-custom/lab-04-portal-sdk-custom.ipynb) | Score real agent responses with built-in and custom evaluators; open the Foundry report |
-| 4B, optional | [LLM-as-judge rubric](labs/lab-04-portal-sdk-custom/lab-04b-llm-as-judge-rubric.ipynb) | Edit a weighted native rubric, review it, and opt in to cloud scoring of calibration answers |
+| 3B, setup | [Create/select reference agent](labs/lab-03-evaluator-matrix/lab-03b-reference-agent-setup.ipynb) | Resolve the evaluation target before using it; pin its name and version |
+| 4 | [Basic agent evaluation](labs/lab-04-portal-sdk-custom/lab-04-portal-sdk-custom.ipynb) | Score real agent responses with built-in and custom evaluators; open the Foundry report |
 | 4, optional | [Portal model exercise](labs/lab-04-portal-sdk-custom/README.md) | Evaluate the underlying model without modifying the agent |
-| 5 | [RAG evaluation](labs/lab-05-rag-evaluation/lab-05-rag-evaluation.ipynb) | Compare answering and retrieval configurations |
-| 6 | [Agent evaluation](labs/lab-06-agent-evaluation/lab-06-agent-evaluation.ipynb) | Inspect answers and tool-use trajectories |
+| 5 | [RAG evaluation](labs/lab-05-rag-evaluation/lab-05-rag-evaluation.ipynb) | Compare simulated answering and retrieval configurations |
+| 6 | [Agent/tool-trajectory evaluation](labs/lab-06-agent-evaluation/lab-06-agent-evaluation.ipynb) | Inspect answers and tool-use trajectories using a separate tool-enabled target |
+| 6B, optional | [Advanced LLM-as-judge rubric](labs/lab-06-agent-evaluation/lab-06b-llm-as-judge-rubric.ipynb) | Calibrate weighted judging criteria after exploring RAG and agent failure modes |
 | 7 | [CI/CD gate](labs/lab-07-cicd/lab-07-cicd-evaluation-gate.ipynb) | Practice passing/failing gates with synthetic scores and inspect pipeline templates |
 | 8 | [Continuous evaluation](labs/lab-08-continuous-evaluation/lab-08-continuous-evaluation.ipynb) | Sample traces, judge responses, and plan monitoring |
 | 9 | [Operating model](labs/lab-09-operating-model/lab-09-operating-model.ipynb) | Build the governance runbook |
 
-For a shorter session, use Labs 1, 2, 4, 7, and 9. See the
+For a shorter session, use Labs 1, 2, 3B, 4, 7, and 9. See the
 [facilitator guide](facilitator/facilitator-guide.md) for timing.
 
-### Lab 4: three distinct exercises
+### Basic evaluation before advanced judge calibration
 
 Start with the [Lab 4 guide](labs/lab-04-portal-sdk-custom/README.md).
-The main notebook evaluates the existing agent. Lab 4B demonstrates native rubric
+The main notebook evaluates the reference agent selected in Lab 03B. Follow it
+with RAG (Lab 05), agent/tool trajectories (Lab 06), and then optional
+[Lab 06B](labs/lab-06-agent-evaluation/lab-06b-llm-as-judge-rubric.ipynb), which demonstrates native rubric
 evaluators using four hand-authored calibration responses, not new agent output;
 `RUN_CLOUD=False` and `RUBRIC_REVIEWED=False` make cloud registration/scoring
 explicit opt-ins. The portal exercise evaluates a model with policy context,
 not the agent's retrieval or tools. Keep their results separate.
+Lab 06 creates `contoso-support-agent-tools-eval`, a separate specialized target;
+it does not replace the reference agent used by Labs 04 and 06B. The new minimal
+reference agent has neither retrieval nor executable tools. Lab 05 remains a
+simulation, not a live RAG deployment.
 
 ### Supporting files
 
@@ -133,7 +147,8 @@ not the agent's retrieval or tools. Keep their results separate.
   gate configuration; pipeline YAML is generated by the notebook, not maintained
   as duplicate standalone templates. Read its limitations before adapting a pipeline.
 - [Reference agent configuration](src/reference-agent/agent-config.yaml):
-  scenario reference, not a deployment command. Reuse the existing agent.
+  Lab 03B uses its instructions only when explicitly creating a missing agent.
+  Its tool entries are scenario references, not executable integrations.
 - [Optional infrastructure](infrastructure/bicep/main.bicep): provisions supporting
   Azure resources (Log Analytics, Application Insights, Search, and Key Vault).
   It does **not** create the Foundry project, deploy a model, or deploy the agent.

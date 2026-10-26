@@ -17,11 +17,11 @@ LAB7 = ROOT / "labs" / "lab-07-cicd"
 
 
 class WorkshopStructureTests(unittest.TestCase):
-    def test_nine_core_labs_and_one_rubric_extension(self):
+    def test_nine_core_labs_with_setup_and_rubric_extensions(self):
         folders = sorted((ROOT / "labs").glob("lab-*"))
         self.assertEqual(len(folders), 9)
         notebooks = list((ROOT / "labs").glob("*/*.ipynb"))
-        self.assertEqual(len(notebooks), 10)
+        self.assertEqual(len(notebooks), 11)
         for path in notebooks:
             with self.subTest(notebook=path.name):
                 notebook = nbformat.read(path, as_version=4)
@@ -31,6 +31,27 @@ class WorkshopStructureTests(unittest.TestCase):
                 for cell in notebook.cells:
                     if cell.cell_type == "code":
                         compile(cell.source, str(path), "exec")
+
+    def test_dependency_first_learning_order(self):
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        table = readme.split("## Learning order", 1)[1].split("For a shorter", 1)[0]
+        expected = [
+            "lab-03-evaluator-matrix/lab-03-evaluator-matrix.ipynb",
+            "lab-03-evaluator-matrix/lab-03b-reference-agent-setup.ipynb",
+            "lab-04-portal-sdk-custom/lab-04-portal-sdk-custom.ipynb",
+            "lab-05-rag-evaluation/lab-05-rag-evaluation.ipynb",
+            "lab-06-agent-evaluation/lab-06-agent-evaluation.ipynb",
+            "lab-06-agent-evaluation/lab-06b-llm-as-judge-rubric.ipynb",
+            "lab-07-cicd/lab-07-cicd-evaluation-gate.ipynb",
+        ]
+        positions = [table.index(path) for path in expected]
+        self.assertEqual(positions, sorted(positions))
+        for path in (
+            ROOT / "README.md",
+            ROOT / "facilitator" / "facilitator-guide.md",
+            ROOT / "labs" / "lab-04-portal-sdk-custom" / "README.md",
+        ):
+            self.assertNotIn("lab-04b-llm-as-judge-rubric.ipynb", path.read_text(encoding="utf-8"))
 
     def test_local_documentation_links_resolve(self):
         documents = list(ROOT.glob("*.md"))

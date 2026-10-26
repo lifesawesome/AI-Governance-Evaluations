@@ -2,12 +2,12 @@
 
 ## Overview
 
-This labs-first workshop is designed for **1-day or 2-day sessions** where CSAs guide customers through building an AI evaluation program. There are nine core labs plus optional Lab 4B and a portal-only model exercise. Labs include live cloud calls, synthetic examples, and adaptation templates; do not present the repository as a production deployment package.
+This labs-first workshop is designed for **1-day or 2-day sessions** where CSAs guide customers through building an AI evaluation program. There are nine core labs, Lab 03B reference-agent setup, optional Lab 06B advanced judge calibration, and a portal-only model exercise. Labs include live cloud calls, synthetic examples, and adaptation templates; do not present the repository as a production deployment package.
 
 ## Prerequisites (Verify Before Workshop)
 
 ### Azure Resources
-- [ ] Existing Azure AI Foundry project, Contoso agent, and judge model deployment (for example, `gpt-4.1`)
+- [ ] Existing Azure AI Foundry project and judge model deployment (for example, `gpt-4.1`); select an existing Contoso agent or create a minimal one in Lab 03B
 - [ ] Participants have `az login` working with correct tenant
 - [ ] Application Insights connected (for Labs 08+)
 - [ ] Azure AI Search (for Lab 05 RAG scenarios)
@@ -32,7 +32,8 @@ python -c "from azure.ai.projects import AIProjectClient; print('SDK ready')"
 | 09:00 | Lab 01: Evaluation Charter | 30 min |
 | 09:30 | Lab 02: Golden Dataset | 45 min |
 | 10:15 | Break | 15 min |
-| 10:30 | Lab 03: Evaluator Selection Matrix | 30 min |
+| 10:30 | Lab 03: Evaluator Selection Matrix | 20 min |
+| 10:50 | Lab 03B: Reference-Agent Setup | 10 min |
 | 11:00 | Lab 04: Portal & SDK Evaluation | 60 min |
 | 12:00 | Lunch | 60 min |
 | 13:00 | Lab 06: Agent Evaluation | 60 min |
@@ -46,7 +47,8 @@ python -c "from azure.ai.projects import AIProjectClient; print('SDK ready')"
 |------|-----|----------|
 | 09:00 | Lab 01: Evaluation Charter | 20 min |
 | 09:20 | Lab 02: Golden Dataset | 30 min |
-| 09:50 | Lab 04: SDK Evaluation | 45 min |
+| 09:50 | Lab 03B: Reference-Agent Setup | 10 min |
+| 10:00 | Lab 04: SDK Evaluation | 35 min |
 | 10:35 | Break | 15 min |
 | 10:50 | Lab 07: CI/CD Gate | 45 min |
 | 11:35 | Lab 09: Operating Model | 25 min |
@@ -56,7 +58,13 @@ python -c "from azure.ai.projects import AIProjectClient; print('SDK ready')"
 | Lab | Duration | When |
 |-----|----------|------|
 | Lab 05: RAG Evaluation | 60 min | After Lab 04 |
+| Lab 06B: Advanced Judge Calibration | 30-45 min | After Labs 05 and 06 |
 | Lab 08: Continuous Evaluation | 60 min | After Lab 07 |
+
+For the complete learning path, include Lab 05 between Labs 04 and 06 (use the
+two-day format if necessary), then offer Lab 06B. The compressed full-day path
+omits RAG and the advanced rubric; do not insert the rubric immediately after
+Lab 04. Basic prompt-based judging in Lab 04 still introduces the mechanism.
 
 ## Common Troubleshooting
 
@@ -80,8 +88,12 @@ python -c "from azure.ai.projects import AIProjectClient; print('SDK ready')"
 - "Cover: happy path, edge cases, adversarial, tool-calling"
 - "18-25 cases is enough to start; grow organically from production"
 
+### Lab 03B — Reference-Agent Setup
+- Complete [reference-agent setup](../labs/lab-03-evaluator-matrix/lab-03b-reference-agent-setup.ipynb) before any Lab 04 live evaluation, including the short track.
+- Reuse existing agents unchanged. Creation requires explicit `CREATE_IF_MISSING=True`; the minimal prompt agent has no retrieval or executable tools.
+- Save the selected name/version to `.env` with the opt-in save cell or copy its output. Restart evaluation kernels and check process environment overrides.
+
 ### Lab 04 — SDK Evaluation
-- Optional extension: use [Lab 4B: interactive LLM-as-judge rubric](../labs/lab-04-portal-sdk-custom/lab-04b-llm-as-judge-rubric.ipynb) to teach native weighted rubrics, dimension applicability, and judge explanations. Allow 30-45 minutes; cloud calls are opt-in and require `azure-ai-projects>=2.8.0`. Its responses are hand-authored calibration examples, not live agent outputs.
 - Optional portal-only extension: follow the [Lab 4 guide](../labs/lab-04-portal-sdk-custom/README.md) to evaluate a model with Developer/User prompts. Explain that model-only results do not exercise the agent's retrieval or tools.
 - "The SDK gives you repeatability; the portal gives you visibility"
 - "Custom evaluators let you encode domain-specific quality"
@@ -94,6 +106,12 @@ python -c "from azure.ai.projects import AIProjectClient; print('SDK ready')"
 ### Lab 06 — Agent Evaluation
 - "Agents need TWO evaluations: what they say AND what they do"
 - "Tool trajectory = the sequence of actions an agent takes"
+- This lab creates a separate `contoso-support-agent-tools-eval` target. Do not replace the reference-agent pin or compare its scorecard directly with a different target's baseline.
+
+### Lab 06B — Advanced Judge Calibration
+- After RAG and agent/tool evaluation, use [Lab 06B: advanced LLM-as-judge rubric](../labs/lab-06-agent-evaluation/lab-06b-llm-as-judge-rubric.ipynb) to teach native weighted rubrics, dimension applicability, and judge explanations. Allow 30-45 minutes; cloud calls are opt-in and require `azure-ai-projects>=2.8.0`.
+- Its scored responses are hand-authored calibration examples, not live agent outputs or tool traces. Optional agent-based generation uses the Lab 03B reference-agent pin.
+- Use the observed retrieval and action failure modes to discuss what answer-only rubrics cannot measure.
 
 ### Lab 07 — CI/CD Gate
 - "Quality gates turn evaluation from a manual step into an automated checkpoint"

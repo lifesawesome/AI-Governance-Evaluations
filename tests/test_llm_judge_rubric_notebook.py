@@ -17,7 +17,7 @@ from azure.core.exceptions import HttpResponseError, ResourceNotFoundError
 
 
 ROOT = Path(__file__).resolve().parents[1]
-NOTEBOOK = ROOT / "labs" / "lab-04-portal-sdk-custom" / "lab-04b-llm-as-judge-rubric.ipynb"
+NOTEBOOK = ROOT / "labs" / "lab-06-agent-evaluation" / "lab-06b-llm-as-judge-rubric.ipynb"
 CELLS = nbformat.read(NOTEBOOK, as_version=4).cells
 SOURCES = {cell.id: cell.source for cell in CELLS if cell.cell_type == "code"}
 
